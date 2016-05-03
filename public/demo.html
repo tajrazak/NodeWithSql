@@ -1,0 +1,45 @@
+<html ng-app="myApp">
+<head>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.css" rel="
+	stylesheet"/>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.1/angular.js"></script>
+</head>
+<body>
+	<div class="containter" ng-controller="myCtrl">
+		<h1>Hello World</h1>
+		<form ng-submit="insertData()" novalidate>
+			<input type="text" ng-model="user.name" class="form-control">
+			<input type="text" ng-model="user.age" class="form-control">
+			Male <input type="checkbox" ng-model="user.gender" class="form-control">
+			<button>Submit</button>
+		</form>
+
+		<button ng-click="getAllUsersData()">getUsers</button>
+
+	</div>
+</body>
+
+
+<script>
+	angular.module('myApp',[]).controller('myCtrl',function($scope,$http){
+		$scope.user = {
+			gender:false
+		};
+		$scope.insertData = function(){
+			console.log($scope.user);
+			$http.post('/insertData',$scope.user).success(function(data){
+				console.log(data);
+			})
+		}
+
+
+		$scope.getAllUsersData = function(){
+			$http.get('/getUsers',{}).success(function(data){
+				console.log(data);
+			})
+		}
+
+	})
+</script>
+
+</html>
