@@ -3,13 +3,28 @@ var bodyParser =  require("body-parser");
 var http = require('http');
 var orm = require('orm');
 
-var global_models;
+var defined_models = require('./public/models.js');
+
+var database_models;
 
 var app = express();
 
 app.use(bodyParser.json());
 
 var server = http.createServer(app);
+
+
+
+app.use(orm.express("mysql://root:password@127.0.0.1/node_mysql",{
+	   define :defined_models.create
+	})
+)
+
+app.get('*',function(req,res,next){
+	database_models = defined_models.getModels();
+	next()
+})
+
 
 app.get('/',function(req,res){
 	res.sendFile('public/demo.html',{ root : __dirname});
@@ -19,21 +34,25 @@ app.get('/',function(req,res){
 app.post('/insertData',function(req,res){
 	console.log(req.body);
 
-	global_models.Person.exists({name:req.body.name},function(err,exists){
-		if(exists)
-		{
-			res.send({success:false,message:'user already exists'});
-		}else{
-			global_models.Person.create({name: req.body.name, age: req.body.age, gender:req.body.gender }, function(err) {
+			database_models.Person.create({name: req.body.name, age: req.body.age,email:req.body.email, gender:req.body.gender }, function(err) {
 				if(err){
 					res.send({success:false,message:err.msg});
 				}else{
-					res.send({success:true});
+
+					database_models.Person.find({name:req.body.name},function(err,person){
+						database_models.Mobile.create({name:req.body.mobile_name,person_id:person[0].id},function(err){
+							//console.log(person[0].id)
+							if(err)
+							 res.send({success:true,message:err.msg});
+							else
+							 res.send({success:true});
+						})
+					})
+
 				}
 			});
-		}
 		
-	})
+
 })
 
 
@@ -52,43 +71,6 @@ app.get('/getUsers',function(req,res){
 	
 })
 
-
-
-app.use(orm.express("mysql://root:p@ssword@127.0.0.1/node_mysql",{
-	define:function(db,models){
-		models.Person = db.define("person", {
-			name      : String,
-			age       : Number, // FLOAT 
-			gender    : Boolean,
-			email 	  : String
-			// continent : [ "Europe", "America", "Asia", "Africa", "Australia", "Antartica" ], // ENUM type 
-			// photo     : Buffer, // BLOB/BINARY 
-			// data      : Object // JSON encoded 
-		}, {
-			methods: {
-				fullName: function () {
-					return this.name + ' ' + this.surname;
-				}
-			},
-			validations: {
-				age: orm.enforce.ranges.number(18, undefined, "under-age")
-			}
-		});
-
-		db.sync(function(err) {
-
-			if (err) 
-				throw err;
-			else{
-				global_models = models;
-				console.log('database created');
-			}
-		})
-
-
-	}
-
-}))
 
 
 
