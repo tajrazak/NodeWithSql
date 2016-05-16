@@ -2,14 +2,14 @@ var orm = require('orm');
 var database_models;
 module.exports = {
 	create:function(db,models){
-		models.Person = db.define("person", {
+		models.Users = db.define("User", {
 			name      : String,
-			age       : Number, // FLOAT 
+			age       : Number, // FLOAT
 			gender    : Boolean,
 			email 	  : String
-			// continent : [ "Europe", "America", "Asia", "Africa", "Australia", "Antartica" ], // ENUM type 
-			// photo     : Buffer, // BLOB/BINARY 
-			// data      : Object // JSON encoded 
+			// continent : [ "Europe", "America", "Asia", "Africa", "Australia", "Antartica" ], // ENUM type
+			// photo     : Buffer, // BLOB/BINARY
+			// data      : Object // JSON encoded
 		}, {
 			methods: {
 				fullName: function () {
@@ -24,19 +24,22 @@ module.exports = {
 		});
 
 
-		models.Mobile = db.define('Mobile', {
-   			 name : String
-		});
+		models.Items = db.define('Item',{
+			item_name:String,
+			amount:Number,
+			type:String
+		})
 
-		models.Mobile.hasOne("person", models.Person,{
- 		   key     : true,
- 		   reverse : "owners"
+		models.Users.hasMany("Item", models.Items,{
+			bought  : Date
+		}, {
+			key     : true
 		});
 
 		db.sync(function(err) {
 
-			if (err) 
-				throw err;
+			if (err)
+			throw err;
 			else{
 				database_models = models;
 				console.log('created')
